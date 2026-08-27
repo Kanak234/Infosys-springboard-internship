@@ -1,0 +1,79 @@
+======================================================================
+HEALTHFORECAST AI - MILESTONE 1 CLEANING REPORT
+======================================================================
+
+[1] LOADED
+    Rows: 101,766   Columns: 50
+    Unique patients: 71,518
+
+[2] MISSING VALUES (columns with any missing)
+    weight                     96.86%
+    medical_specialty          49.08%
+    payer_code                 39.56%
+    race                        2.23%
+    diag_3                      1.40%
+    diag_2                      0.35%
+    diag_1                      0.02%
+
+[3] DROPPED COLUMNS (4)
+    weight        - 96.86% missing
+    payer_code    - 52.00% missing, not outcome-relevant
+    examide       - constant value, no information
+    citoglipton   - constant value, no information
+
+[4] FILLING MISSING VALUES
+    medical_specialty -> 'Missing' category (53% blank, still predictive)
+    race              -> 'Missing' category (2% blank)
+    diag_1/2/3        -> 'Missing' before ICD9 grouping
+    gender            -> dropped 3 rows with invalid gender
+
+[5] REMOVED DEATH / HOSPICE DISCHARGES
+    discharge_disposition_id in [11, 13, 14, 19, 20, 21]
+    Removed 2,423 rows (they cannot be readmitted)
+
+[6] KEPT FIRST ENCOUNTER PER PATIENT
+    Removed 29,353 repeat encounters
+    Remaining: 69,987 independent patient records
+
+[7] DECODED ID COLUMNS
+    admission_type_id -> admission_type (6 categories)
+    discharge_disposition_id -> discharge_disposition (20 categories)
+    admission_source_id -> admission_source (17 categories)
+
+[8] GROUPED ICD9 DIAGNOSIS CODES
+    diag_1: 695 raw codes -> 10 groups
+    Primary diagnosis distribution:
+        Circulatory         21,389  ( 30.6%)
+        Other               12,124  ( 17.3%)
+        Respiratory          9,491  ( 13.6%)
+        Digestive            6,488  (  9.3%)
+        Diabetes             5,748  (  8.2%)
+        Injury               4,694  (  6.7%)
+        Musculoskeletal      4,064  (  5.8%)
+        Genitourinary        3,441  (  4.9%)
+        Neoplasms            2,538  (  3.6%)
+        Missing                 10  (  0.0%)
+
+[9] AGE CONVERTED
+    age bracket -> age_numeric (midpoint) + age_group (<30 / 30-60 / 60+)
+    Mean age: 65.4 years
+
+[10] TARGET VARIABLE CREATED
+    readmitted_30d = 1 if readmitted within 30 days, else 0
+    Positive class: 6,285 (8.98%)
+    Negative class: 63,702 (91.02%)
+    NOTE: imbalanced - use class_weight / SMOTE at model stage.
+
+[11] ENGINEERED FEATURES
+    total_prior_visits   = outpatient + emergency + inpatient
+    num_med_changes      = count of drugs with dosage Up/Down (20 drug cols)
+    num_meds_prescribed  = count of drugs actually prescribed
+
+[12] FINAL DATASET
+    Rows:    69,987  (from 101,766, removed 31,779)
+    Columns: 55
+    Missing values: 0
+    Duplicate patients: 0
+    Saved: diabetic_data_clean.csv (19.2 MB)
+
+[13] data_dictionary.csv written - column types for the PostgreSQL schema
